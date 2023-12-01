@@ -8,27 +8,18 @@ pub fn solve_first(input: []const u8, alloc: std.mem.Allocator) ![]const u8 {
 
     var lines = std.mem.split(u8, input, "\n");
     while (lines.next()) |line| {
+        var ind: ?usize = null;
         var first = @as(u64, 0);
         var last = @as(u64, 0);
 
-        for (line) |ch| {
-            if (common.is_digit(ch)) {
-                first = ch - '0';
-                break;
-            }
+        ind = std.mem.indexOfAny(u8, line, "123456789");
+        if (ind == null) {
+            break;
         }
+        first = line[ind.?] - '0';
 
-        var i = line.len - 1;
-        while (i >= 0) : (i -= 1) {
-            if (common.is_digit(line[i])) {
-                last = line[i] - '0';
-                break;
-            }
-
-            if (i == 0) { // to prevent int overflow
-                break;
-            }
-        }
+        ind = std.mem.lastIndexOfAny(u8, line, "123456789");
+        last = line[ind.?] - '0';
 
         sum += first * 10 + last;
     }
@@ -50,8 +41,7 @@ const found_text_number = struct {
 fn find_text_number(input: []const u8, start_pos: usize) ?found_text_number {
     var result: found_text_number = .{ .index = input.len, .number = 255 };
     var ind: usize = 0;
-    var numbers = [10][]const u8{
-        "zero",
+    var numbers = [9][]const u8{
         "one",
         "two",
         "three",
@@ -64,14 +54,14 @@ fn find_text_number(input: []const u8, start_pos: usize) ?found_text_number {
     };
 
     // searches for numbers
-    ind = std.mem.indexOfAnyPos(u8, input, start_pos, "0123456789") orelse input.len;
+    ind = std.mem.indexOfAnyPos(u8, input, start_pos, "123456789") orelse input.len;
     if (result.index > ind) {
         result.index = ind;
         result.number = input[ind] - '0';
     }
 
     // searches for text numbers
-    for (numbers, 0..10) |value, numb| {
+    for (numbers, 1..10) |value, numb| {
         const u8_numb: u8 = @intCast(numb);
         ind = std.mem.indexOfPos(u8, input, start_pos, value) orelse input.len;
 
