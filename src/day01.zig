@@ -6,7 +6,7 @@ const common = @import("common");
 pub fn solve_first(input: []const u8, alloc: std.mem.Allocator) ![]const u8 {
     var sum = @as(u64, 0);
 
-    var lines = std.mem.split(u8, input, "\n");
+    var lines = std.mem.splitAny(u8, input, "\n");
     while (lines.next()) |line| {
         var ind: ?usize = null;
         var first = @as(u64, 0);
@@ -80,7 +80,7 @@ fn find_text_number(input: []const u8, start_pos: usize) ?found_text_number {
 pub fn solve_second(input: []const u8, alloc: std.mem.Allocator) ![]const u8 {
     var sum = @as(u64, 0);
 
-    var lines = std.mem.split(u8, input, "\n");
+    var lines = std.mem.splitAny(u8, input, "\n");
     while (lines.next()) |line| {
         var first: u64 = 0;
         var last: u64 = 0;
@@ -117,7 +117,7 @@ test "day 01 first star example" {
     try expect(std.mem.eql(u8, output, "142"));
 }
 
-test "find_text_number test" {
+test "day01 find_text_number" {
     const input =
         \\nine1two
     ;
