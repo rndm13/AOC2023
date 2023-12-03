@@ -30,9 +30,9 @@ fn parse_input(input: []const u8, alloc: std.mem.Allocator) !std.ArrayList(Game)
     var lines = std.mem.splitAny(u8, input, "\n");
 
     while (lines.next()) |line| {
-        if (line.len == 0) {
-            break; // dirty hack but it works
-        }
+        // if (line.len == 0) {
+        //     break; // dirty hack but it works
+        // }
 
         const new_game: *Game = try result.addOne();
         new_game.* = Game.init(alloc);
