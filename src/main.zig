@@ -2,6 +2,7 @@ const std = @import("std");
 pub const day01 = @import("day01");
 pub const day02 = @import("day02");
 pub const day03 = @import("day03");
+pub const day04 = @import("day04");
 
 pub fn main() !void {
     const out_w = std.io.getStdOut().writer();
@@ -80,6 +81,30 @@ pub fn main() !void {
             defer alloc.free(day03_out);
 
             try out_w.print("Day 03 second star finished with:\n{s}\n", .{day03_out});
+        }
+
+        @memset(input_buffer, 0); // clear the buffer for next day
+    }
+
+    {
+        const day04_file = try std.fs.cwd().openFile("inputs/day04.txt", .{});
+        defer day04_file.close();
+
+        _ = try day04_file.readAll(input_buffer);
+        const input = std.mem.trimRight(u8, input_buffer, &[_]u8{ 0, '\n', '\r', '\t', ' ' });
+
+        {
+            const day04_out = try day04.solve_first(input, alloc);
+            defer alloc.free(day04_out);
+
+            try out_w.print("Day 04 first star finished with:\n{s}\n", .{day04_out});
+        }
+
+        {
+            const day04_out = try day04.solve_second(input, alloc);
+            defer alloc.free(day04_out);
+
+            try out_w.print("Day 04 second star finished with:\n{s}\n", .{day04_out});
         }
 
         @memset(input_buffer, 0); // clear the buffer for next day
