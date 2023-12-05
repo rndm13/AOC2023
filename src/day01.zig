@@ -3,7 +3,7 @@ const common = @import("common");
 
 // kinda want to have a similar interface for every solution,
 // that's why this one returns a string and not a number
-pub fn solve_first(input: []const u8, alloc: std.mem.Allocator) ![]const u8 {
+pub fn solveFirst(input: []const u8, alloc: std.mem.Allocator) ![]const u8 {
     var sum = @as(u64, 0);
 
     var lines = std.mem.splitAny(u8, input, "\n");
@@ -33,13 +33,13 @@ pub fn solve_first(input: []const u8, alloc: std.mem.Allocator) ![]const u8 {
 // Well this is going to be funny because there aren't regexes in zig std rn
 // I feel like best solution would be to use smth like trie but that will take a bit of time to implement
 
-const found_text_number = struct {
+const FoundTextNumber = struct {
     index: usize,
     number: u8,
 };
 
-fn find_text_number(input: []const u8, start_pos: usize) ?found_text_number {
-    var result: found_text_number = .{ .index = input.len, .number = 255 };
+fn findTextNumber(input: []const u8, start_pos: usize) ?FoundTextNumber {
+    var result: FoundTextNumber = .{ .index = input.len, .number = 255 };
     var ind: usize = 0;
     var numbers = [9][]const u8{
         "one",
@@ -77,7 +77,7 @@ fn find_text_number(input: []const u8, start_pos: usize) ?found_text_number {
     return result;
 }
 
-pub fn solve_second(input: []const u8, alloc: std.mem.Allocator) ![]const u8 {
+pub fn solveSecond(input: []const u8, alloc: std.mem.Allocator) ![]const u8 {
     var sum = @as(u64, 0);
 
     var lines = std.mem.splitAny(u8, input, "\n");
@@ -85,14 +85,14 @@ pub fn solve_second(input: []const u8, alloc: std.mem.Allocator) ![]const u8 {
         var first: u64 = 0;
         var last: u64 = 0;
 
-        var number: ?found_text_number = find_text_number(line, 0);
+        var number: ?FoundTextNumber = findTextNumber(line, 0);
         if (number != null) {
             first = number.?.number;
         }
         while (number != null) {
             last = number.?.number;
 
-            number = find_text_number(line, number.?.index + 1);
+            number = findTextNumber(line, number.?.index + 1);
         }
 
         sum += first * 10 + last;
@@ -111,7 +111,7 @@ test "day 01 first star example" {
         \\treb7uchet
     ;
 
-    const output = try solve_first(input, std.testing.allocator);
+    const output = try solveFirst(input, std.testing.allocator);
     defer alloc.free(output);
 
     try expect(std.mem.eql(u8, output, "142"));
@@ -122,17 +122,17 @@ test "day01 find_text_number" {
         \\nine1two
     ;
 
-    const first = find_text_number(input, 0);
+    const first = findTextNumber(input, 0);
 
     try expect(first.?.index == 0);
     try expect(first.?.number == 9);
 
-    const second = find_text_number(input, first.?.index + 1);
+    const second = findTextNumber(input, first.?.index + 1);
     // std.debug.print("{any}", .{second});
     try expect(second.?.index == 4);
     try expect(second.?.number == 1);
 
-    const third = find_text_number(input, second.?.index + 1);
+    const third = findTextNumber(input, second.?.index + 1);
     try expect(third.?.index == 5);
     try expect(third.?.number == 2);
 }
@@ -149,7 +149,7 @@ test "day 01 second star example" {
         \\7pqrstsixteen
     ;
 
-    const output = try solve_second(input, std.testing.allocator);
+    const output = try solveSecond(input, std.testing.allocator);
     defer alloc.free(output);
 
     // std.debug.print("{s}\n", .{output});

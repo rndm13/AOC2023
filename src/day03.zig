@@ -46,7 +46,7 @@ const adjacency = [8][2]i64{
     [2]i64{ -1, -1 },
 };
 
-pub fn solve_first(input: []const u8, alloc: std.mem.Allocator) ![]const u8 {
+pub fn solveFirst(input: []const u8, alloc: std.mem.Allocator) ![]const u8 {
     var schematic: common.Array2D(SchematicUnit) = undefined;
 
     // find index of newline to know how many chars in a line, includes the newline
@@ -121,7 +121,7 @@ pub fn solve_first(input: []const u8, alloc: std.mem.Allocator) ![]const u8 {
     return std.fmt.allocPrint(alloc, "{d}", .{sum});
 }
 
-pub fn solve_second(input: []const u8, alloc: std.mem.Allocator) ![]const u8 {
+pub fn solveSecond(input: []const u8, alloc: std.mem.Allocator) ![]const u8 {
     var schematic: common.Array2D(SchematicUnit) = undefined;
 
     // find index of newline to know how many chars in a line, includes the newline
@@ -252,7 +252,7 @@ test "day 03 first star example" {
         \\.664.598..
     ;
 
-    const output = try solve_first(input, test_alloc);
+    const output = try solveFirst(input, test_alloc);
     defer test_alloc.free(output);
 
     try expect(std.mem.eql(u8, output, "4361"));
@@ -272,7 +272,7 @@ test "day 03 second star example" {
         \\.664.598..
     ;
 
-    const output = try solve_second(input, test_alloc);
+    const output = try solveSecond(input, test_alloc);
     defer test_alloc.free(output);
 
     try expect(std.mem.eql(u8, output, "467835"));

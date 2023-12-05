@@ -44,5 +44,9 @@ pub fn Array2D(comptime element: type) type {
         pub fn rows(self: Self) usize {
             return self.items.len / self.cols + 1;
         }
+
+        pub fn rowsIterator(self: Self) std.mem.WindowIterator(element) {
+            std.mem.window(element, self.items, self.cols, self.cols);
+        }
     };
 }

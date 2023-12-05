@@ -24,7 +24,7 @@ const Game = struct {
     }
 };
 
-fn parse_input(input: []const u8, alloc: std.mem.Allocator) !std.ArrayList(Game) {
+fn parseInput(input: []const u8, alloc: std.mem.Allocator) !std.ArrayList(Game) {
     var result = std.ArrayList(Game).init(alloc);
 
     var lines = std.mem.splitAny(u8, input, "\n");
@@ -73,10 +73,10 @@ fn parse_input(input: []const u8, alloc: std.mem.Allocator) !std.ArrayList(Game)
     return result;
 }
 
-pub fn solve_first(input: []const u8, alloc: std.mem.Allocator) ![]const u8 {
+pub fn solveFirst(input: []const u8, alloc: std.mem.Allocator) ![]const u8 {
     var sum: u64 = 0;
 
-    const games = try parse_input(input, alloc);
+    const games = try parseInput(input, alloc);
     defer {
         for (games.items) |game| {
             game.deinit();
@@ -107,10 +107,10 @@ pub fn solve_first(input: []const u8, alloc: std.mem.Allocator) ![]const u8 {
     return std.fmt.allocPrint(alloc, "{d}", .{sum});
 }
 
-pub fn solve_second(input: []const u8, alloc: std.mem.Allocator) ![]const u8 {
+pub fn solveSecond(input: []const u8, alloc: std.mem.Allocator) ![]const u8 {
     var sum: u64 = 0;
 
-    const games = try parse_input(input, alloc);
+    const games = try parseInput(input, alloc);
     defer {
         for (games.items) |game| {
             game.deinit();
@@ -141,7 +141,7 @@ test "day 02 parse input" {
         \\Game 1: 3 blue, 4 red; 1 red, 2 green, 6 blue; 2 green
     ;
 
-    const output = try parse_input(input, std.testing.allocator);
+    const output = try parseInput(input, std.testing.allocator);
 
     defer {
         for (output.items) |game| {
@@ -170,7 +170,7 @@ test "day 02 first star example" {
         \\Game 5: 6 red, 1 blue, 3 green; 2 blue, 1 red, 2 green
     ;
 
-    const output = try solve_first(input, alloc);
+    const output = try solveFirst(input, alloc);
     defer alloc.free(output);
 
     try expect(std.mem.eql(u8, output, "8"));
@@ -186,7 +186,7 @@ test "day 02 second star example" {
         \\Game 5: 6 red, 1 blue, 3 green; 2 blue, 1 red, 2 green
     ;
 
-    const output = try solve_second(input, alloc);
+    const output = try solveSecond(input, alloc);
     defer alloc.free(output);
 
     try expect(std.mem.eql(u8, output, "2286"));

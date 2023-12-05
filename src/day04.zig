@@ -36,7 +36,7 @@ const ScratchCard = struct {
     }
 };
 
-fn parse_input(input: []const u8, alloc: std.mem.Allocator) !std.ArrayList(ScratchCard) {
+fn parseInput(input: []const u8, alloc: std.mem.Allocator) !std.ArrayList(ScratchCard) {
     var result = std.ArrayList(ScratchCard).init(alloc);
 
     var lines = std.mem.split(u8, input, "\n");
@@ -56,8 +56,8 @@ fn parse_input(input: []const u8, alloc: std.mem.Allocator) !std.ArrayList(Scrat
     return result;
 }
 
-pub fn solve_first(input: []const u8, alloc: std.mem.Allocator) ![]const u8 {
-    const parsed = try parse_input(input, alloc);
+pub fn solveFirst(input: []const u8, alloc: std.mem.Allocator) ![]const u8 {
+    const parsed = try parseInput(input, alloc);
     defer {
         for (parsed.items) |card| {
             alloc.free(card.winning);
@@ -81,8 +81,8 @@ pub fn solve_first(input: []const u8, alloc: std.mem.Allocator) ![]const u8 {
     return std.fmt.allocPrint(alloc, "{d}", .{sum});
 }
 
-pub fn solve_second(input: []const u8, alloc: std.mem.Allocator) ![]const u8 {
-    const parsed = try parse_input(input, alloc);
+pub fn solveSecond(input: []const u8, alloc: std.mem.Allocator) ![]const u8 {
+    const parsed = try parseInput(input, alloc);
 
     defer {
         for (parsed.items) |card| {
@@ -127,7 +127,7 @@ test "day 04 first star example" {
         \\Card 6: 31 18 13 56 72 | 74 77 10 23 35 67 36 11
     ;
 
-    const output = try solve_first(input, std.testing.allocator);
+    const output = try solveFirst(input, std.testing.allocator);
     defer alloc.free(output);
 
     try expect(std.mem.eql(u8, output, "13"));
@@ -144,9 +144,9 @@ test "day 04 second star example" {
         \\Card 6: 31 18 13 56 72 | 74 77 10 23 35 67 36 11
     ;
 
-    const output = try solve_second(input, std.testing.allocator);
+    const output = try solveSecond(input, std.testing.allocator);
     defer alloc.free(output);
 
-    std.debug.print("{s}\n", .{output});
+    // std.debug.print("{s}\n", .{output});
     try expect(std.mem.eql(u8, output, "30"));
 }

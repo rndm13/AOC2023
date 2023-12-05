@@ -3,6 +3,7 @@ pub const day01 = @import("day01");
 pub const day02 = @import("day02");
 pub const day03 = @import("day03");
 pub const day04 = @import("day04");
+pub const day05 = @import("day05");
 
 pub fn main() !void {
     const out_w = std.io.getStdOut().writer();
@@ -22,14 +23,14 @@ pub fn main() !void {
         const input = std.mem.trimRight(u8, input_buffer, &[_]u8{ 0, '\n', '\r', '\t', ' ' });
 
         {
-            const day01_out = try day01.solve_first(input, alloc);
+            const day01_out = try day01.solveFirst(input, alloc);
             defer alloc.free(day01_out);
 
             try out_w.print("Day 01 first star finished with:\n{s}\n", .{day01_out});
         }
 
         {
-            const day01_out = try day01.solve_second(input, alloc);
+            const day01_out = try day01.solveSecond(input, alloc);
             defer alloc.free(day01_out);
 
             try out_w.print("Day 01 second star finished with:\n{s}\n", .{day01_out});
@@ -46,14 +47,14 @@ pub fn main() !void {
         const input = std.mem.trimRight(u8, input_buffer, &[_]u8{ 0, '\n', '\r', '\t', ' ' });
 
         {
-            const day02_out = try day02.solve_first(input, alloc);
+            const day02_out = try day02.solveFirst(input, alloc);
             defer alloc.free(day02_out);
 
             try out_w.print("Day 02 first star finished with:\n{s}\n", .{day02_out});
         }
 
         {
-            const day02_out = try day02.solve_second(input, alloc);
+            const day02_out = try day02.solveSecond(input, alloc);
             defer alloc.free(day02_out);
 
             try out_w.print("Day 02 second star finished with:\n{s}\n", .{day02_out});
@@ -70,14 +71,14 @@ pub fn main() !void {
         const input = std.mem.trimRight(u8, input_buffer, &[_]u8{ 0, '\n', '\r', '\t', ' ' });
 
         {
-            const day03_out = try day03.solve_first(input, alloc);
+            const day03_out = try day03.solveFirst(input, alloc);
             defer alloc.free(day03_out);
 
             try out_w.print("Day 03 first star finished with:\n{s}\n", .{day03_out});
         }
 
         {
-            const day03_out = try day03.solve_second(input, alloc);
+            const day03_out = try day03.solveSecond(input, alloc);
             defer alloc.free(day03_out);
 
             try out_w.print("Day 03 second star finished with:\n{s}\n", .{day03_out});
@@ -94,17 +95,41 @@ pub fn main() !void {
         const input = std.mem.trimRight(u8, input_buffer, &[_]u8{ 0, '\n', '\r', '\t', ' ' });
 
         {
-            const day04_out = try day04.solve_first(input, alloc);
+            const day04_out = try day04.solveFirst(input, alloc);
             defer alloc.free(day04_out);
 
             try out_w.print("Day 04 first star finished with:\n{s}\n", .{day04_out});
         }
 
         {
-            const day04_out = try day04.solve_second(input, alloc);
+            const day04_out = try day04.solveSecond(input, alloc);
             defer alloc.free(day04_out);
 
             try out_w.print("Day 04 second star finished with:\n{s}\n", .{day04_out});
+        }
+
+        @memset(input_buffer, 0); // clear the buffer for next day
+    }
+
+    {
+        const day05_file = try std.fs.cwd().openFile("inputs/day05.txt", .{});
+        defer day05_file.close();
+
+        _ = try day05_file.readAll(input_buffer);
+        const input = std.mem.trimRight(u8, input_buffer, &[_]u8{ 0, '\n', '\r', '\t', ' ' });
+
+        {
+            const day05_out = try day05.solveFirst(input, alloc);
+            defer alloc.free(day05_out);
+
+            try out_w.print("Day 05 first star finished with:\n{s}\n", .{day05_out});
+        }
+
+        {
+            const day05_out = try day05.solveSecond(input, alloc);
+            defer alloc.free(day05_out);
+
+            try out_w.print("Day 05 second star finished with:\n{s}\n", .{day05_out});
         }
 
         @memset(input_buffer, 0); // clear the buffer for next day
