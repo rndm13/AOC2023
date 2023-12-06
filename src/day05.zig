@@ -1,6 +1,24 @@
 const std = @import("std");
 const common = @import("common");
 
+const Range = struct {
+    const Self = @This();
+    start: i64,
+    len: i64,
+
+    fn end(self: Self) i64 {
+        return self.start + self.len;
+    }
+
+    fn index(self: Self, point: i64) ?i64 {
+        if (point < self.start or point >= self.end()) {
+            return null;
+        }
+
+        return point - self.start;
+    }
+};
+
 const RangeMapping = struct {
     const Self = @This();
 
@@ -8,12 +26,12 @@ const RangeMapping = struct {
     source_range_start: i64,
     range_length: i64,
 
-    fn get(self: Self, source: i64) ?i64 {
-        if (source < self.source_range_start or source >= self.source_range_end()) {
+    fn get(self: Self, point: i64) ?i64 {
+        if (point < self.source_range_start or point >= self.source_range_end()) {
             return null;
         }
 
-        return source + self.destination_range_start - self.source_range_start;
+        return point + self.destination_range_start - self.source_range_start;
     }
 
     fn destination_range_end(self: Self) i64 {
@@ -22,6 +40,20 @@ const RangeMapping = struct {
 
     fn source_range_end(self: Self) i64 {
         return self.source_range_start + self.range_length;
+    }
+
+    fn destination(self: Self) Range {
+        return Range{
+            .start = self.destination_range_start,
+            .len = self.range_length,
+        };
+    }
+
+    fn source(self: Self) Range {
+        return Range{
+            .start = self.source_range_start,
+            .len = self.range_length,
+        };
     }
 };
 
@@ -139,7 +171,8 @@ test "parseMap test" {
 
 const Input = struct {
     const Self = @This();
-    seeds: std.ArrayList(i64),
+    seeds: std.ArrayList(i64), // p1
+    seed_ranges: std.ArrayList(Range), // p2
 
     map_pipeline: std.ArrayList(std.ArrayList(RangeMapping)),
 
@@ -152,9 +185,20 @@ const Input = struct {
         return mapped;
     }
 
+    fn pipelineSeedRanges(self: *Self) !void {
+        for (self.map_pipeline.items) |map| {
+            try mapSeedRanges(&self.seed_ranges, map.items);
+            for (self.seed_ranges.items) |seed_range| {
+                std.debug.print("{d} - {d}\n", .{ seed_range.start, seed_range.end() - 1 });
+            }
+            std.debug.print("\n-------\n\n", .{});
+        }
+    }
+
     fn init(alloc: std.mem.Allocator) Self {
         return .{
             .seeds = std.ArrayList(i64).init(alloc),
+            .seed_ranges = std.ArrayList(Range).init(alloc),
             .map_pipeline = std.ArrayList(std.ArrayList(RangeMapping)).init(alloc),
         };
     }
@@ -165,6 +209,7 @@ const Input = struct {
         }
         self.map_pipeline.deinit();
         self.seeds.deinit();
+        self.seed_ranges.deinit();
     }
 };
 
@@ -201,18 +246,107 @@ pub fn solveFirst(input: []const u8, alloc: std.mem.Allocator) ![]const u8 {
     return std.fmt.allocPrint(alloc, "{d}", .{min});
 }
 
+fn mapSeedRanges(seed_ranges: *std.ArrayList(Range), map: []const RangeMapping) !void {
+    // Abbomination of a function
+    // I got very angry so I just decided to try and explicitly handle every case I could think of
+    // At least it has nice comments I think
+
+    var results = std.ArrayList(Range).init(seed_ranges.allocator);
+    defer results.deinit();
+    var next_ranges = std.ArrayList(Range).init(seed_ranges.allocator);
+    defer next_ranges.deinit();
+    try next_ranges.insertSlice(next_ranges.items.len, seed_ranges.items);
+    for (map) |mapping_range| {
+        const ranges = try next_ranges.toOwnedSlice();
+        defer next_ranges.allocator.free(ranges);
+        for (ranges) |range| {
+            if (mapping_range.source().index(range.start) != null and mapping_range.source().index(range.end() - 1) != null) {
+                // range:           ******
+                // mapping_range: ----------
+
+                const mapped = Range{
+                    .start = mapping_range.get(range.start).?,
+                    .len = range.len,
+                };
+                (try next_ranges.addOne()).* = mapped;
+
+                continue;
+            }
+
+            var any = false;
+
+            const left_split = range.index(mapping_range.source_range_start) orelse 0;
+            if (left_split > 0) {
+                // range:         **------
+                // mapping_range:   ----
+
+                const left = Range{
+                    .start = range.start,
+                    .len = left_split,
+                };
+
+                any = true;
+                (try next_ranges.addOne()).* = left;
+            }
+
+            const right_split = range.index(mapping_range.source_range_end() - 1) orelse range.len;
+
+            if (range.index(mapping_range.source_range_start) != null or range.index(mapping_range.source_range_end() - 1) != null) {
+                // range:         --****--
+                // mapping_range:   ----
+
+                const middle = Range{
+                    .start = mapping_range.get(range.start + left_split).?,
+                    .len = right_split + 1 - left_split,
+                };
+
+                any = true;
+                (try results.addOne()).* = middle;
+            }
+
+            const right = Range{
+                .start = range.start + right_split + 1,
+                .len = range.len - right_split - 1,
+            };
+
+            if (right.len > 0) {
+                // range:         ------**
+                // mapping_range:   ----
+                any = true;
+                (try next_ranges.addOne()).* = right;
+            }
+
+            if (!any) {
+                (try next_ranges.addOne()).* = range;
+            }
+        }
+    }
+
+    try seed_ranges.resize(0);
+    try seed_ranges.insertSlice(seed_ranges.items.len, next_ranges.items);
+    try seed_ranges.insertSlice(seed_ranges.items.len, results.items);
+}
+
 pub fn solveSecond(input: []const u8, alloc: std.mem.Allocator) ![]const u8 {
     var parsed_input = Input.init(alloc);
     defer parsed_input.deinit();
 
     try parseInput(input, &parsed_input);
 
-    var min: i64 = 99999999999999; // idk, some large number, didn't find something like i64max
     var seed_pairs = std.mem.window(i64, parsed_input.seeds.items, 2, 2);
+
     while (seed_pairs.next()) |seed_pair| {
-        for (@intCast(seed_pair[0])..@intCast(seed_pair[0] + seed_pair[1])) |seed| {
-            min = @min(parsed_input.getMapPipelined(@intCast(seed)), min);
-        }
+        (try parsed_input.seed_ranges.addOne()).* = Range{
+            .start = seed_pair[0],
+            .len = seed_pair[1],
+        };
+    }
+
+    try parsed_input.pipelineSeedRanges();
+
+    var min = parsed_input.seed_ranges.items[0].start;
+    for (parsed_input.seed_ranges.items) |seeds| {
+        min = @min(min, seeds.start);
     }
 
     return std.fmt.allocPrint(alloc, "{d}", .{min});
@@ -301,6 +435,7 @@ test "day 05 second star example" {
     ;
 
     const output = try solveSecond(input, std.testing.allocator);
+
     defer alloc.free(output);
 
     try expect(std.mem.eql(u8, output, "46"));
