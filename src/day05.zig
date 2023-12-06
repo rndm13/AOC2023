@@ -188,10 +188,10 @@ const Input = struct {
     fn pipelineSeedRanges(self: *Self) !void {
         for (self.map_pipeline.items) |map| {
             try mapSeedRanges(&self.seed_ranges, map.items);
-            for (self.seed_ranges.items) |seed_range| {
-                std.debug.print("{d} - {d}\n", .{ seed_range.start, seed_range.end() - 1 });
-            }
-            std.debug.print("\n-------\n\n", .{});
+            // for (self.seed_ranges.items) |seed_range| {
+            // std.debug.print("{d} - {d}\n", .{ seed_range.start, seed_range.end() - 1 });
+            // }
+            // std.debug.print("\n-------\n\n", .{});
         }
     }
 
