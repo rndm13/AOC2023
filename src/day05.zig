@@ -268,7 +268,7 @@ fn mapSeedRanges(seed_ranges: *std.ArrayList(Range), map: []const RangeMapping) 
                     .start = mapping_range.get(range.start).?,
                     .len = range.len,
                 };
-                (try next_ranges.addOne()).* = mapped;
+                (try results.addOne()).* = mapped;
 
                 continue;
             }
@@ -289,7 +289,7 @@ fn mapSeedRanges(seed_ranges: *std.ArrayList(Range), map: []const RangeMapping) 
                 (try next_ranges.addOne()).* = left;
             }
 
-            const right_split = range.index(mapping_range.source_range_end() - 1) orelse range.len;
+            const right_split = range.index(mapping_range.source_range_end() - 1) orelse range.len - 1;
 
             if (range.index(mapping_range.source_range_start) != null or range.index(mapping_range.source_range_end() - 1) != null) {
                 // range:         --****--
@@ -306,7 +306,7 @@ fn mapSeedRanges(seed_ranges: *std.ArrayList(Range), map: []const RangeMapping) 
 
             const right = Range{
                 .start = range.start + right_split + 1,
-                .len = range.len - right_split - 1,
+                .len = range.len - (right_split + 1),
             };
 
             if (right.len > 0) {
@@ -325,6 +325,49 @@ fn mapSeedRanges(seed_ranges: *std.ArrayList(Range), map: []const RangeMapping) 
     try seed_ranges.resize(0);
     try seed_ranges.insertSlice(seed_ranges.items.len, next_ranges.items);
     try seed_ranges.insertSlice(seed_ranges.items.len, results.items);
+}
+
+test "mapSeedRanges middle test" {
+    const alloc = std.testing.allocator;
+    var seed_ranges = std.ArrayList(Range).init(alloc);
+    defer seed_ranges.deinit();
+    try seed_ranges.insertSlice(seed_ranges.items.len, &[_]Range{
+        Range{
+            .start = 2,
+            .len = 10,
+        },
+    });
+
+    const map = [_]RangeMapping{
+        RangeMapping{
+            .source_range_start = 7,
+            .destination_range_start = 15,
+            .range_length = 1,
+        },
+    };
+
+    try mapSeedRanges(&seed_ranges, &map);
+
+    const expected_seeds = [_]Range{
+        Range{
+            .start = 2,
+            .len = 5,
+        },
+        Range{
+            .start = 8,
+            .len = 4,
+        },
+        Range{
+            .start = 15,
+            .len = 1,
+        },
+    };
+
+    for (seed_ranges.items, expected_seeds) |got, expected| {
+        // std.debug.print("{} - {} = {} - {}\n", .{ got.start, got.end(), expected.start, expected.end() });
+        try expect(got.start == expected.start);
+        try expect(got.len == expected.len);
+    }
 }
 
 pub fn solveSecond(input: []const u8, alloc: std.mem.Allocator) ![]const u8 {
@@ -390,7 +433,7 @@ test "day 05 first star example" {
         \\56 93 4
     ;
 
-    const output = try solveFirst(input, std.testing.allocator);
+    const output = try solveFirst(input, alloc);
     defer alloc.free(output);
 
     try expect(std.mem.eql(u8, output, "35"));
@@ -434,7 +477,7 @@ test "day 05 second star example" {
         \\56 93 4
     ;
 
-    const output = try solveSecond(input, std.testing.allocator);
+    const output = try solveSecond(input, alloc);
 
     defer alloc.free(output);
 
