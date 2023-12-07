@@ -7,6 +7,7 @@ comptime {
     _ = @import("day04.zig");
     _ = @import("day05.zig");
     _ = @import("day06.zig");
+    _ = @import("day07.zig");
 }
 
 test {

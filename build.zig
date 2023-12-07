@@ -76,6 +76,14 @@ pub fn build(b: *std.Build) void {
         },
     });
     exe.addModule("day06", day06);
+
+    const day07 = b.addModule("day07", .{
+        .source_file = .{ .path = "src/day07.zig" },
+        .dependencies = &.{
+            .{ .name = "common", .module = common },
+        },
+    });
+    exe.addModule("day07", day07);
     // This declares intent for the executable to be installed into the
     // standard location when the user invokes the "install" step (the default
     // step when running `zig build`).
@@ -119,6 +127,7 @@ pub fn build(b: *std.Build) void {
     unit_tests.addModule("day04", day04);
     unit_tests.addModule("day05", day05);
     unit_tests.addModule("day06", day06);
+    unit_tests.addModule("day07", day07);
 
     const run_unit_tests = b.addRunArtifact(unit_tests);
 
