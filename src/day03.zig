@@ -55,6 +55,7 @@ pub fn solveFirst(input: []const u8, alloc: std.mem.Allocator) ![]const u8 {
     {
         const units = try alloc.alloc(SchematicUnit, input.len);
         defer alloc.free(units);
+        const rows = units.len / cols + 1;
 
         for (input, units) |char, *unit| {
             unit.* = SchematicUnit.fromu8(char);
@@ -62,14 +63,16 @@ pub fn solveFirst(input: []const u8, alloc: std.mem.Allocator) ![]const u8 {
 
         schematic = try common.Array2D(SchematicUnit).init(
             alloc,
-            units,
             cols,
+            rows,
         );
+
+        @memcpy(schematic.items[0..units.len], units);
     }
     defer schematic.deinit();
 
     // find the ones that are enabled in final sum
-    for (0..schematic.rows()) |j| {
+    for (0..schematic.rows) |j| {
         for (0..schematic.cols - 1) |i| { // -1 to ignore the rightmost column filled with newlines
             const cur = schematic.at(i, j);
 
@@ -81,7 +84,7 @@ pub fn solveFirst(input: []const u8, alloc: std.mem.Allocator) ![]const u8 {
                 const adj_i: i64 = @as(i64, @intCast(i)) - adj[0];
                 const adj_j: i64 = @as(i64, @intCast(j)) - adj[1];
 
-                if (adj_i < 0 or adj_i >= schematic.cols or adj_j < 0 or adj_j >= schematic.rows()) {
+                if (adj_i < 0 or adj_i >= schematic.cols or adj_j < 0 or adj_j >= schematic.rows) {
                     continue;
                 }
 
@@ -93,7 +96,7 @@ pub fn solveFirst(input: []const u8, alloc: std.mem.Allocator) ![]const u8 {
 
     var sum: u64 = 0;
 
-    for (0..schematic.rows()) |j| {
+    for (0..schematic.rows) |j| {
         var cur_number: u64 = 0;
         var cur_enabled: bool = false;
 
@@ -130,21 +133,20 @@ pub fn solveSecond(input: []const u8, alloc: std.mem.Allocator) ![]const u8 {
     {
         const units = try alloc.alloc(SchematicUnit, input.len);
         defer alloc.free(units);
+        const rows = units.len / cols + 1;
 
         for (input, units) |char, *unit| {
             unit.* = SchematicUnit.fromu8(char);
         }
 
-        schematic = try common.Array2D(SchematicUnit).init(
-            alloc,
-            units,
-            cols,
-        );
+        schematic = try common.Array2D(SchematicUnit).init(alloc, cols, rows);
+
+        @memcpy(schematic.items[0..units.len], units);
     }
     defer schematic.deinit();
 
     // find all gears
-    for (0..schematic.rows()) |j| {
+    for (0..schematic.rows) |j| {
         for (0..schematic.cols - 1) |i| { // -1 to ignore the rightmost column filled with newlines
             const cur = schematic.at(i, j);
 
@@ -159,7 +161,7 @@ pub fn solveSecond(input: []const u8, alloc: std.mem.Allocator) ![]const u8 {
                 const adj_i: i64 = @as(i64, @intCast(i)) - adj[0];
                 const adj_j: i64 = @as(i64, @intCast(j)) - adj[1];
 
-                if (adj_i < 0 or adj_i >= schematic.cols or adj_j < 0 or adj_j >= schematic.rows()) {
+                if (adj_i < 0 or adj_i >= schematic.cols or adj_j < 0 or adj_j >= schematic.rows) {
                     continue;
                 }
 
@@ -184,7 +186,7 @@ pub fn solveSecond(input: []const u8, alloc: std.mem.Allocator) ![]const u8 {
 
     var sum: u64 = 0;
 
-    for (0..schematic.rows()) |j| {
+    for (0..schematic.rows) |j| {
         var cur_number: u64 = 0;
         var second_number: u64 = 0;
 

@@ -14,21 +14,22 @@ pub fn Array2D(comptime element: type) type {
 
         items: []element,
         cols: usize,
+        rows: usize,
         alloc: std.mem.Allocator,
 
         pub fn init(
             alloc: std.mem.Allocator,
-            elements: []const element,
             cols: usize,
+            rows: usize,
         ) !Self {
             var result = Self{
                 .items = undefined,
                 .cols = cols,
+                .rows = rows,
                 .alloc = alloc,
             };
 
-            result.items = try result.alloc.alloc(element, elements.len);
-            @memcpy(result.items, elements);
+            result.items = try result.alloc.alloc(element, cols * rows);
 
             return result;
         }
@@ -41,12 +42,8 @@ pub fn Array2D(comptime element: type) type {
             return &self.items[row * self.cols + column];
         }
 
-        pub fn rows(self: Self) usize {
-            return self.items.len / self.cols + 1;
-        }
-
-        pub fn rowsIterator(self: Self) std.mem.WindowIterator(element) {
-            std.mem.window(element, self.items, self.cols, self.cols);
+        pub fn rowSlice(self: Self, row: usize) []element {
+            return self.items[row * self.cols .. row * self.cols + self.cols];
         }
     };
 }
