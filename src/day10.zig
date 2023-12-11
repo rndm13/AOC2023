@@ -76,6 +76,16 @@ const BfsResult = struct {
     coords: @Vector(2, usize),
 };
 
+fn adjacentCoords(coords: @Vector(2, usize), comptime dir: usize) @Vector(2, usize) {
+    return coords -% @Vector(2, usize){ 1, 1 } +% comptime switch (dir) {
+        0 => @Vector(2, usize){ 1, 0 }, // top
+        1 => @Vector(2, usize){ 0, 1 }, // left
+        2 => @Vector(2, usize){ 2, 1 }, // right
+        3 => @Vector(2, usize){ 1, 2 }, // bottom
+        else => unreachable,
+    };
+}
+
 fn bfs(pipeline: common.Array2D(Pipe)) !BfsResult {
     const alloc: std.mem.Allocator = pipeline.alloc;
     var queue = try std.ArrayList(@Vector(2, usize)).initCapacity(alloc, pipeline.cols * pipeline.rows / 4);
@@ -109,14 +119,7 @@ fn bfs(pipeline: common.Array2D(Pipe)) !BfsResult {
 
             // unfortunately zig as of right now (2023-12-10) doesn't allow for control flow (continue) in inline for so I need to write it like so
             if (value) {
-                var adj_coords = coords -% @Vector(2, usize){ 1, 1 } +% comptime switch (dir) {
-                    0 => @Vector(2, usize){ 1, 0 }, // top
-                    1 => @Vector(2, usize){ 0, 1 }, // left
-                    2 => @Vector(2, usize){ 2, 1 }, // right
-                    3 => @Vector(2, usize){ 1, 2 }, // bottom
-                    else => unreachable,
-                };
-
+                var adj_coords = adjacentCoords(coords, dir);
                 if (@reduce(.Max, adj_coords) < pipeline.cols) { // cols == rows in inputs
                     const connected_pipe = pipeline.at(adj_coords[0], adj_coords[1]);
                     // std.debug.print("{s}\n{c} {any}\n{c} {any}\n\n", .{ name, pipe.symbol, pipe, connected_pipe.symbol, connected_pipe });
@@ -188,13 +191,7 @@ fn outline(pipeline: common.Array2D(Pipe), start: @Vector(2, usize)) void {
                 var value = @field(pipe.connections, name);
 
                 if (value) {
-                    var adj_coords = coords -% @Vector(2, usize){ 1, 1 } +% comptime switch (dir) {
-                        0 => @Vector(2, usize){ 1, 0 }, // top
-                        1 => @Vector(2, usize){ 0, 1 }, // left
-                        2 => @Vector(2, usize){ 2, 1 }, // right
-                        3 => @Vector(2, usize){ 1, 2 }, // bottom
-                        else => unreachable,
-                    };
+                    var adj_coords = adjacentCoords(coords, dir);
 
                     const connected_pipe = pipeline.at(adj_coords[0], adj_coords[1]);
                     const op_value = @field(connected_pipe.connections, op_name);
@@ -216,13 +213,7 @@ fn outline(pipeline: common.Array2D(Pipe), start: @Vector(2, usize)) void {
             const value = @field(connections, name);
 
             if (value) {
-                var adj_coords = coords -% @Vector(2, usize){ 1, 1 } +% comptime switch (dir) {
-                    0 => @Vector(2, usize){ 1, 0 }, // top
-                    1 => @Vector(2, usize){ 0, 1 }, // left
-                    2 => @Vector(2, usize){ 2, 1 }, // right
-                    3 => @Vector(2, usize){ 1, 2 }, // bottom
-                    else => unreachable,
-                };
+                var adj_coords = adjacentCoords(coords, dir);
                 const connected_pipe = pipeline.at(adj_coords[0], adj_coords[1]);
                 if (!connected_pipe.loop) {
                     last_saved = (last_saved + 1) % connected.len;
