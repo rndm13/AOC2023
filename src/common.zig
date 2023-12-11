@@ -47,3 +47,11 @@ pub fn Array2D(comptime element: type) type {
         }
     };
 }
+
+pub const Direction = packed struct {
+    // Order matters for opposite sides
+    top: bool = false,
+    left: bool = false,
+    right: bool = false,
+    bottom: bool = false,
+};
