@@ -90,3 +90,11 @@ test "day 09 second star" {
 
     try expect(std.mem.eql(u8, output, "5"));
 }
+
+pub fn solveFirst(input: []const u8, alloc: std.mem.Allocator) ![]const u8 {
+    return solve(input, alloc, .First);
+}
+
+pub fn solveSecond(input: []const u8, alloc: std.mem.Allocator) ![]const u8 {
+    return solve(input, alloc, .Second);
+}

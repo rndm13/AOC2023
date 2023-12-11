@@ -176,3 +176,11 @@ test "Day 07 second star example" {
 
     try expect(std.mem.eql(u8, output, "5905"));
 }
+
+pub fn solveFirst(input: []const u8, alloc: std.mem.Allocator) ![]const u8 {
+    return solve(input, alloc, false);
+}
+
+pub fn solveSecond(input: []const u8, alloc: std.mem.Allocator) ![]const u8 {
+    return solve(input, alloc, true);
+}

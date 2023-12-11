@@ -3,21 +3,23 @@ const std = @import("std");
 
 const expect = std.testing.expect;
 
-const Color = enum {
-    None,
+const Color = enum(u2) {
+    None = 0,
 
-    Processing,
-    Processed,
+    Processing = 1,
+    Processed = 2,
 };
 
 const Pipe = struct {
     const Self = @This();
 
     symbol: u8,
-    color: Color = .None,
-    distance: usize = 0,
-    loop: bool = false,
-    connections: common.Direction,
+
+    data: packed struct {
+        color: Color = .None,
+        loop: bool = false,
+        connections: common.Direction,
+    },
 
     fn init(symbol: u8) Self {
         const connections = switch (symbol) {
@@ -37,7 +39,7 @@ const Pipe = struct {
 
         return Self{
             .symbol = symbol,
-            .connections = connections,
+            .data = .{ .connections = connections },
         };
     }
 };
@@ -94,7 +96,7 @@ fn bfs(pipeline: common.Array2D(Pipe)) !BfsResult {
     start: for (0..pipeline.cols) |i| {
         for (0..pipeline.rows) |j| {
             if (pipeline.at(i, j).symbol == 'S') {
-                pipeline.at(i, j).color = .Processing;
+                pipeline.at(i, j).data.color = .Processing;
                 (try queue.addOne()).* = .{ i, j };
                 break :start;
             }
@@ -108,7 +110,7 @@ fn bfs(pipeline: common.Array2D(Pipe)) !BfsResult {
 
         const pipe = pipeline.at(coords[0], coords[1]);
 
-        const connections = pipe.connections;
+        const connections = pipe.data.connections;
         // iterate through all dirs
         inline for (0..dirs.Struct.fields.len) |dir| {
             const field = dirs.Struct.fields[dir];
@@ -123,15 +125,14 @@ fn bfs(pipeline: common.Array2D(Pipe)) !BfsResult {
                 if (@reduce(.Max, adj_coords) < pipeline.cols) { // cols == rows in inputs
                     const connected_pipe = pipeline.at(adj_coords[0], adj_coords[1]);
                     // std.debug.print("{s}\n{c} {any}\n{c} {any}\n\n", .{ name, pipe.symbol, pipe, connected_pipe.symbol, connected_pipe });
-                    if (connected_pipe.color != .Processed) {
-                        const op_value = @field(connected_pipe.connections, op_name);
+                    if (connected_pipe.data.color != .Processed) {
+                        const op_value = @field(connected_pipe.data.connections, op_name);
                         if (op_value) {
-                            if (connected_pipe.color == .Processing) {
-                                return .{ .distance = connected_pipe.distance, .coords = adj_coords };
+                            if (connected_pipe.data.color == .Processing) {
+                                return .{ .distance = queue.items.len / 2, .coords = adj_coords };
                             }
 
-                            connected_pipe.color = .Processing;
-                            connected_pipe.distance = pipe.distance + 1;
+                            connected_pipe.data.color = .Processing;
 
                             (try queue.addOne()).* = adj_coords;
                             len += 1;
@@ -140,7 +141,7 @@ fn bfs(pipeline: common.Array2D(Pipe)) !BfsResult {
                 }
             }
         }
-        pipe.color = .Processed;
+        pipe.data.color = .Processed;
     }
 
     return error{NotFound}.NotFound;
@@ -179,7 +180,7 @@ fn outline(pipeline: common.Array2D(Pipe), start: @Vector(2, usize)) void {
         const coords = connected[i].?;
         const pipe = pipeline.at(coords[0], coords[1]);
 
-        pipe.loop = true;
+        pipe.data.loop = true;
         if (pipe.symbol == 'S') {
             // remove unused connections from S
 
@@ -188,16 +189,16 @@ fn outline(pipeline: common.Array2D(Pipe), start: @Vector(2, usize)) void {
                 const name = field.name;
                 const op_field = dirs.Struct.fields[dirs.Struct.fields.len - 1 - dir];
                 const op_name = op_field.name;
-                var value = @field(pipe.connections, name);
+                var value = @field(pipe.data.connections, name);
 
                 if (value) {
                     var adj_coords = adjacentCoords(coords, dir);
 
                     const connected_pipe = pipeline.at(adj_coords[0], adj_coords[1]);
-                    const op_value = @field(connected_pipe.connections, op_name);
+                    const op_value = @field(connected_pipe.data.connections, op_name);
 
-                    if (!connected_pipe.loop or !op_value) {
-                        @field(pipe.connections, name) = false;
+                    if (!connected_pipe.data.loop or !op_value) {
+                        @field(pipe.data.connections, name) = false;
                     }
                 }
             }
@@ -205,7 +206,7 @@ fn outline(pipeline: common.Array2D(Pipe), start: @Vector(2, usize)) void {
             break;
         }
 
-        const connections = pipe.connections;
+        const connections = pipe.data.connections;
         // iterate through all dirs
         inline for (0..dirs.Struct.fields.len) |dir| {
             const field = dirs.Struct.fields[dir];
@@ -215,7 +216,7 @@ fn outline(pipeline: common.Array2D(Pipe), start: @Vector(2, usize)) void {
             if (value) {
                 var adj_coords = adjacentCoords(coords, dir);
                 const connected_pipe = pipeline.at(adj_coords[0], adj_coords[1]);
-                if (!connected_pipe.loop) {
+                if (!connected_pipe.data.loop) {
                     last_saved = (last_saved + 1) % connected.len;
                     connected[last_saved] = adj_coords;
                 }
@@ -224,7 +225,7 @@ fn outline(pipeline: common.Array2D(Pipe), start: @Vector(2, usize)) void {
     }
 
     for (connected) |coord| {
-        pipeline.at(coord.?[0], coord.?[1]).loop = true;
+        pipeline.at(coord.?[0], coord.?[1]).data.loop = true;
     }
 }
 
@@ -242,12 +243,12 @@ pub fn solveSecond(input: []const u8, alloc: std.mem.Allocator) ![]const u8 {
         for (0..pipelines.cols) |col| {
             const pipe = pipelines.at(col, row);
 
-            if (!pipe.loop) {
+            if (!pipe.data.loop) {
                 count += @intFromBool(inside);
                 continue;
             }
 
-            const connections = pipe.connections;
+            const connections = pipe.data.connections;
             if (connections.top) {
                 turns = turns orelse 0;
                 turns.? += 1;
