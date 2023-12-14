@@ -41,7 +41,7 @@ const FoundTextNumber = struct {
 fn findTextNumber(input: []const u8, start_pos: usize) ?FoundTextNumber {
     var result: FoundTextNumber = .{ .index = input.len, .number = 255 };
     var ind: usize = 0;
-    var numbers = [9][]const u8{
+    const numbers = [9][]const u8{
         "one",
         "two",
         "three",

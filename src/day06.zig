@@ -39,7 +39,7 @@ fn parseInput(input: []const u8, alloc: std.mem.Allocator) ![]Race {
     }
     defer alloc.free(distances);
 
-    var races = try alloc.alloc(Race, times.len);
+    const races = try alloc.alloc(Race, times.len);
     for (races, times, distances) |*r, t, d| {
         r.time = t;
         r.distance = d;

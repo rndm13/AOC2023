@@ -21,7 +21,7 @@ fn extrapolate(input: []i64, alloc: std.mem.Allocator, comptime dir: enum { Next
     var sum: i64 = 0;
     var last_row: usize = 0;
     for (0..numbers.rows) |row| {
-        var row_slice = numbers.rowSlice(row)[0 .. numbers.rows - row];
+        const row_slice = numbers.rowSlice(row)[0 .. numbers.rows - row];
         var zeroes = true;
         for (row_slice) |num| {
             zeroes = zeroes and num == 0;
@@ -57,7 +57,7 @@ pub fn solve(input: []const u8, alloc: std.mem.Allocator, comptime part: enum { 
     var lines = std.mem.splitAny(u8, input, "\n");
     var sum: i64 = 0;
     while (lines.next()) |line| {
-        var parsed = try parseNumbers(line, alloc);
+        const parsed = try parseNumbers(line, alloc);
         defer alloc.free(parsed);
 
         sum += try extrapolate(parsed, alloc, if (part == .First) .Next else .Prev);

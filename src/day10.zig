@@ -121,7 +121,7 @@ fn bfs(pipeline: common.Array2D(Pipe)) !BfsResult {
 
             // unfortunately zig as of right now (2023-12-10) doesn't allow for control flow (continue) in inline for so I need to write it like so
             if (value) {
-                var adj_coords = adjacentCoords(coords, dir);
+                const adj_coords = adjacentCoords(coords, dir);
                 if (@reduce(.Max, adj_coords) < pipeline.cols) { // cols == rows in inputs
                     const connected_pipe = pipeline.at(adj_coords[0], adj_coords[1]);
                     // std.debug.print("{s}\n{c} {any}\n{c} {any}\n\n", .{ name, pipe.symbol, pipe, connected_pipe.symbol, connected_pipe });
@@ -189,10 +189,10 @@ fn outline(pipeline: common.Array2D(Pipe), start: @Vector(2, usize)) void {
                 const name = field.name;
                 const op_field = dirs.Struct.fields[dirs.Struct.fields.len - 1 - dir];
                 const op_name = op_field.name;
-                var value = @field(pipe.data.connections, name);
+                const value = @field(pipe.data.connections, name);
 
                 if (value) {
-                    var adj_coords = adjacentCoords(coords, dir);
+                    const adj_coords = adjacentCoords(coords, dir);
 
                     const connected_pipe = pipeline.at(adj_coords[0], adj_coords[1]);
                     const op_value = @field(connected_pipe.data.connections, op_name);
@@ -214,7 +214,7 @@ fn outline(pipeline: common.Array2D(Pipe), start: @Vector(2, usize)) void {
             const value = @field(connections, name);
 
             if (value) {
-                var adj_coords = adjacentCoords(coords, dir);
+                const adj_coords = adjacentCoords(coords, dir);
                 const connected_pipe = pipeline.at(adj_coords[0], adj_coords[1]);
                 if (!connected_pipe.data.loop) {
                     last_saved = (last_saved + 1) % connected.len;
