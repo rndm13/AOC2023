@@ -1,8 +1,17 @@
 const std = @import("std");
 
-// Although this function looks imperative, note that its job is to
-// declaratively construct a build graph that will be executed by an external
-// runner.
+pub fn addDay(b: *std.Build, comptime name: []const u8, common: *std.build.Module, steps: []const *std.build.Step.Compile) void {
+    const day = b.addModule(name, .{
+        .source_file = .{ .path = "src/" ++ name ++ ".zig" },
+        .dependencies = &.{
+            .{ .name = "common", .module = common },
+        },
+    });
+    for (steps) |step| {
+        step.addModule(name, day);
+    }
+}
+
 pub fn build(b: *std.Build) void {
     // Standard target options allows the person running `zig build` to choose
     // what target to build for. Here we do not override the defaults, which
@@ -24,90 +33,33 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
 
+    // Creates a step for unit testing. This only builds the test executable
+    // but does not run it.
+    const unit_tests = b.addTest(.{
+        .root_source_file = .{ .path = "src/tests.zig" },
+
+        .target = target,
+        .optimize = optimize,
+    });
+
     const common = b.addModule("day01", .{
         .source_file = .{ .path = "src/common.zig" },
     });
     exe.addModule("common", common);
+    unit_tests.addModule("common", common);
 
-    const day01 = b.addModule("day01", .{
-        .source_file = .{ .path = "src/day01.zig" },
-        .dependencies = &.{
-            .{ .name = "common", .module = common },
-        },
-    });
-    exe.addModule("day01", day01);
-
-    const day02 = b.addModule("day02", .{
-        .source_file = .{ .path = "src/day02.zig" },
-        .dependencies = &.{
-            .{ .name = "common", .module = common },
-        },
-    });
-    exe.addModule("day02", day02);
-
-    const day03 = b.addModule("day03", .{
-        .source_file = .{ .path = "src/day03.zig" },
-        .dependencies = &.{
-            .{ .name = "common", .module = common },
-        },
-    });
-    exe.addModule("day03", day03);
-
-    const day04 = b.addModule("day04", .{
-        .source_file = .{ .path = "src/day04.zig" },
-        .dependencies = &.{
-            .{ .name = "common", .module = common },
-        },
-    });
-    exe.addModule("day04", day04);
-
-    const day05 = b.addModule("day05", .{
-        .source_file = .{ .path = "src/day05.zig" },
-        .dependencies = &.{
-            .{ .name = "common", .module = common },
-        },
-    });
-    exe.addModule("day05", day05);
-
-    const day06 = b.addModule("day06", .{
-        .source_file = .{ .path = "src/day06.zig" },
-        .dependencies = &.{
-            .{ .name = "common", .module = common },
-        },
-    });
-    exe.addModule("day06", day06);
-
-    const day07 = b.addModule("day07", .{
-        .source_file = .{ .path = "src/day07.zig" },
-        .dependencies = &.{
-            .{ .name = "common", .module = common },
-        },
-    });
-    exe.addModule("day07", day07);
-
-    const day08 = b.addModule("day08", .{
-        .source_file = .{ .path = "src/day08.zig" },
-        .dependencies = &.{
-            .{ .name = "common", .module = common },
-        },
-    });
-    exe.addModule("day08", day08);
-
-    const day09 = b.addModule("day09", .{
-        .source_file = .{ .path = "src/day09.zig" },
-        .dependencies = &.{
-            .{ .name = "common", .module = common },
-        },
-    });
-    exe.addModule("day09", day09);
-
-    const day10 = b.addModule("day10", .{
-        .source_file = .{ .path = "src/day10.zig" },
-        .dependencies = &.{
-            .{ .name = "common", .module = common },
-        },
-    });
-    exe.addModule("day10", day10);
+    const steps = [_]*std.build.Step.Compile{ exe, unit_tests };
+    addDay(b, "day01", common, &steps);
+    addDay(b, "day02", common, &steps);
+    addDay(b, "day03", common, &steps);
+    addDay(b, "day04", common, &steps);
+    addDay(b, "day05", common, &steps);
+    addDay(b, "day06", common, &steps);
+    addDay(b, "day07", common, &steps);
+    addDay(b, "day08", common, &steps);
+    addDay(b, "day09", common, &steps);
+    addDay(b, "day10", common, &steps);
+    addDay(b, "day11", common, &steps);
     // This declares intent for the executable to be installed into the
     // standard location when the user invokes the "install" step (the default
     // step when running `zig build`).
@@ -135,26 +87,6 @@ pub fn build(b: *std.Build) void {
     // This will evaluate the `run` step rather than the default, which is "install".
     const run_step = b.step("run", "Run the app");
     run_step.dependOn(&run_cmd.step);
-
-    // Creates a step for unit testing. This only builds the test executable
-    // but does not run it.
-    const unit_tests = b.addTest(.{
-        .root_source_file = .{ .path = "src/tests.zig" },
-
-        .target = target,
-        .optimize = optimize,
-    });
-    unit_tests.addModule("common", common);
-    unit_tests.addModule("day01", day01);
-    unit_tests.addModule("day02", day02);
-    unit_tests.addModule("day03", day03);
-    unit_tests.addModule("day04", day04);
-    unit_tests.addModule("day05", day05);
-    unit_tests.addModule("day06", day06);
-    unit_tests.addModule("day07", day07);
-    unit_tests.addModule("day08", day08);
-    unit_tests.addModule("day09", day09);
-    unit_tests.addModule("day10", day10);
 
     const run_unit_tests = b.addRunArtifact(unit_tests);
 
