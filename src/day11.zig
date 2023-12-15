@@ -150,12 +150,12 @@ test "day 11 part one" {
 }
 
 pub fn solveSecond(input: []const u8, alloc: std.mem.Allocator) ![]u8 {
-    const points = try parseInput(i128, input, alloc);
+    const points = try parseInput(i64, input, alloc);
     defer points.deinit();
 
-    try spaceExpansion(i128, 999_999, alloc, points);
+    try spaceExpansion(i64, 999_999, alloc, points);
 
-    var sum: u128 = 0;
+    var sum: u64 = 0;
     for (0..points.items.len) |i| {
         for (i + 1..points.items.len) |j| {
             sum +|= @reduce(.Add, @abs(points.items[i] - points.items[j]));
