@@ -9,6 +9,7 @@ const day07 = @import("day07");
 const day08 = @import("day08");
 const day09 = @import("day09");
 const day10 = @import("day10");
+const day11 = @import("day11");
 
 fn doDay(alloc: std.mem.Allocator, input_buffer: []u8, comptime name: []const u8, comptime module: type) !void {
     const out_w = std.io.getStdOut().writer();
@@ -58,4 +59,5 @@ pub fn main() !void {
     try doDay(alloc, input_buffer, "day08", day08);
     try doDay(alloc, input_buffer, "day09", day09);
     try doDay(alloc, input_buffer, "day10", day10);
+    try doDay(alloc, input_buffer, "day11", day11);
 }
